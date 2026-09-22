@@ -16,6 +16,29 @@ const LOGO = "/brand/rival-logo.png";
 const LOGO_SMALL = "/brand/rival-logo-sm.webp";
 const LOGO_RATIO = { width: 1178, height: 591 };
 
+/** Desktop navbar categories, in reading order. Both slug spellings are accepted (mock vs API). */
+const NAV_CATEGORY_SLUGS = [
+  "brand-bags",
+  "women-bags",
+  "brand-sunglasses",
+  "sunglasses",
+  "colombian-shapewear",
+  "silk-pillowcases",
+];
+
+function navbarCategories(tree: { id: string; slug: string; name: string }[]) {
+  const bySlug = new Map(tree.map((category) => [category.slug, category]));
+  const picked: typeof tree = [];
+  const seen = new Set<string>();
+  for (const slug of NAV_CATEGORY_SLUGS) {
+    const category = bySlug.get(slug);
+    if (!category || seen.has(category.id)) continue;
+    picked.push(category);
+    seen.add(category.id);
+  }
+  return picked;
+}
+
 function Count({ value }: { value: number }) {
   if (value <= 0) return null;
   return <span className={styles.count} aria-label={`${value} عناصر`}>{value > 9 ? "9+" : value}</span>;
@@ -35,7 +58,7 @@ export function Header() {
   const pathname = usePathname();
   const shop = useShop();
   const { tree, isPending } = useCategoryTree();
-  const mainCategories = tree.slice(0, 4);
+  const navCategories = navbarCategories(tree);
   const { setMenuOpen, setBrandOpen } = shop;
 
   useEffect(() => {
@@ -49,43 +72,43 @@ export function Header() {
       <OfflineBanner />
       <header className={styles.header}>
         <div className={`${styles.bar} glass`}>
-          <div className={styles.start}>
-            <button type="button" className={`icon-button ${styles.mobileOnly}`} onClick={() => shop.setMenuOpen(true)} aria-label="فتح القائمة" aria-expanded={shop.menuOpen}>
-              <Menu size={20} />
-            </button>
-            <nav className={styles.nav} aria-label="التنقل الرئيسي">
-              <Link className={pathname === ROUTES.products ? styles.active : ""} href={ROUTES.products}>المتجر</Link>
-              {isPending
-                ? Array.from({ length: 3 }, (_, index) => <Skeleton key={index} className={styles.navSkeleton} />)
-                : mainCategories.map((category) => (
-                    <Link
-                      key={category.id}
-                      href={ROUTES.category(category.slug)}
-                      className={pathname.startsWith(ROUTES.category(category.slug)) ? styles.active : ""}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-              <BrandMenuTrigger />
-            </nav>
+          <div className={styles.top}>
+            <div className={styles.start}>
+              <button type="button" className={`icon-button ${styles.mobileOnly}`} onClick={() => shop.setMenuOpen(true)} aria-label="فتح القائمة" aria-expanded={shop.menuOpen}>
+                <Menu size={20} />
+              </button>
+            </div>
+
+            <Link href={ROUTES.home} className={styles.logo} aria-label="ريفال - الرئيسية">
+              <SmartImage src={LOGO} alt="Rival" width={LOGO_RATIO.width} height={LOGO_RATIO.height} sizes="190px" priority />
+            </Link>
+
+            <div className={styles.end}>
+              <Link className={`icon-button ${styles.desktopOnly}`} href={ROUTES.search} aria-label="البحث"><Search size={19} /></Link>
+              <Link className={`icon-button ${styles.desktopOnly} ${styles.relative}`} href={ROUTES.wishlist} aria-label="المفضلة">
+                <Heart size={19} /><Count value={shop.wishlist.length} />
+              </Link>
+              <button type="button" className={`icon-button ${styles.relative}`} onClick={() => shop.setCartOpen(true)} aria-label="فتح الحقيبة">
+                <ShoppingBag size={19} /><Count value={shop.cartCount} />
+              </button>
+            </div>
           </div>
 
-          <Link href={ROUTES.home} className={styles.logo} aria-label="ريفال - الرئيسية">
-            <SmartImage src={LOGO} alt="Rival" width={LOGO_RATIO.width} height={LOGO_RATIO.height} sizes="190px" priority />
-          </Link>
-
-          <div className={styles.end}>
-            <Link className={`icon-button ${styles.desktopOnly}`} href={ROUTES.search} aria-label="البحث"><Search size={19} /></Link>
-            <Link className={`icon-button ${styles.desktopOnly} ${styles.relative}`} href={ROUTES.wishlist} aria-label="المفضلة">
-              <Heart size={19} /><Count value={shop.wishlist.length} />
-            </Link>
-            <Link className={`icon-button ${styles.desktopOnly} ${styles.relative}`} href={ROUTES.compare} aria-label="المقارنة">
-              <Scale size={19} /><Count value={shop.compare.length} />
-            </Link>
-            <button type="button" className={`icon-button ${styles.relative}`} onClick={() => shop.setCartOpen(true)} aria-label="فتح الحقيبة">
-              <ShoppingBag size={19} /><Count value={shop.cartCount} />
-            </button>
-          </div>
+          <nav className={styles.nav} aria-label="التنقل الرئيسي">
+            <Link className={pathname === ROUTES.products ? styles.active : ""} href={ROUTES.products}>المتجر</Link>
+            {isPending
+              ? Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className={styles.navSkeleton} />)
+              : navCategories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={ROUTES.category(category.slug)}
+                    className={pathname.startsWith(ROUTES.category(category.slug)) ? styles.active : ""}
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+            <BrandMenuTrigger />
+          </nav>
         </div>
         <BrandMegaMenu />
       </header>

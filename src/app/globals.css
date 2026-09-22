@@ -19,7 +19,7 @@
 
   /* Layout metrics — the floating header offset + its height, and the mobile bottom nav. */
   --header-offset: 16px;
-  --header-bar-h: 78px;
+  --header-bar-h: 118px;
   --header-h: calc(var(--header-offset) + var(--header-bar-h) + 12px);
   --bottom-nav-h: 0px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -32,6 +32,13 @@
   --z-modal: 100;
   --z-lightbox: 110;
   --z-toast: 120;
+}
+
+@media (max-width: 980px) {
+  :root {
+    --header-bar-h: 78px;
+    --header-h: calc(var(--header-offset) + var(--header-bar-h) + 12px);
+  }
 }
 
 @media (max-width: 760px) {
