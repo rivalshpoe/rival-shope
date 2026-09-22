@@ -54,7 +54,7 @@ services:
       Jwt__Audience: ${Jwt__Audience:-rival-admin}
       Security__DeviceHmacKey: ${Security__DeviceHmacKey:?Security__DeviceHmacKey is required}
       Security__AesKey: ${Security__AesKey:?Security__AesKey is required}
-      Resend__ApiKey: ${Resend__ApiKey:?Resend__ApiKey is required}
+      Resend__ApiKey: ${Resend__ApiKey:-}
       Resend__From: ${Resend__From:-Rival <onboarding@resend.dev>}
       Email__Provider: Resend
       Admin__Email: ${Admin__Email:-rivalshpoe@gmail.com}
