@@ -60,10 +60,11 @@ try
             c.DocumentTitle = "Rival Store API";
         });
     }
-    else
+    else if (app.Configuration.GetValue("HttpsRedirection:Enabled", true))
     {
         // Behind Caddy/Nginx the proxy terminates TLS; X-Forwarded-Proto (UseForwardedHeaders above) tells us the scheme.
         // The container HEALTHCHECK calls plain http://localhost:8080/api/v1/health, so health is exempt from the redirect.
+        // Set HttpsRedirection:Enabled=false when the site is served over plain HTTP (no domain or certificate yet).
         app.UseHsts();
         app.UseWhen(ctx => !ctx.Request.Path.StartsWithSegments("/api/v1/health"), branch => branch.UseHttpsRedirection());
     }

@@ -46,6 +46,7 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+      HttpsRedirection__Enabled: ${HttpsRedirection__Enabled:-false}
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Postgres: ${ConnectionStrings__Postgres:?ConnectionStrings__Postgres is required}
       Redis__ConnectionString: ${Redis__ConnectionString:-redis:6379,abortConnect=false}
