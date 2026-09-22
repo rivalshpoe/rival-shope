@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
+import { useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowUpLeft, ChevronLeft, ChevronRight, Quote, Sparkles, Star } from "lucide-react";
 import { ProductCard, ProductGrid } from "@/components/product/ProductCard";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -15,8 +15,11 @@ import { useBrands, useCategoryTree, useProductPage, useProducts, useReviews } f
 import type { Review } from "@/types/api.types";
 import styles from "./HomeExperience.module.css";
 
-const HERO_POSTER = "https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?auto=format&fit=crop&w=2000&q=80";
-const HERO_VIDEO = "https://cdn.coverr.co/videos/coverr-a-woman-walking-in-a-coat-1577/1080p.mp4";
+const HERO_SLIDES = [
+  { src: "/home/hero-bag.png", alt: "حقيبة فاخرة من ريفال" },
+  { src: "/home/hero-sunglasses.png", alt: "نظارات شمسية من ريفال" },
+  { src: "/home/hero-silk.png", alt: "حرير للبشرة والشعر من ريفال" },
+] as const;
 
 export function HomeExperience() {
   return (
@@ -39,25 +42,22 @@ export function HomeExperience() {
 /* -------------------------------------------------------------------------- */
 
 function Hero() {
-  const [videoFailed, setVideoFailed] = useState(false);
   const reducedMotion = useReducedMotion();
   return (
     <section className={styles.hero} aria-label="مقدمة">
       <div className={styles.heroMedia}>
-        <SmartImage src={HERO_POSTER} alt="" fill sizes="100vw" priority />
-        {!videoFailed && !reducedMotion && (
-          <video autoPlay muted loop playsInline poster={HERO_POSTER} onError={() => setVideoFailed(true)} aria-hidden="true">
-            <source src={HERO_VIDEO} type="video/mp4" />
-          </video>
-        )}
+        {HERO_SLIDES.map((slide, index) => (
+          <div
+            className={styles.slide}
+            key={slide.src}
+            style={reducedMotion ? undefined : { animationDelay: `${index * 7}s` }}
+          >
+            <SmartImage src={slide.src} alt={index === 0 ? slide.alt : ""} fill sizes="100vw" priority={index === 0} />
+          </div>
+        ))}
         <div className={styles.heroShade} />
       </div>
-      <motion.div
-        className={`container ${styles.heroContent}`}
-        initial={reducedMotion ? false : { opacity: 0, y: 28 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <div className={styles.heroContent}>
         <span className={styles.heroKicker}><Sparkles size={14} /> THE RIVAL EDIT · 2026</span>
         <h1>أناقتكِ،<br /><em>بتوقيع مختلف.</em></h1>
         <p>قطع منتقاة لا تتبع اللحظة، بل تصنعها. حقائب، نظارات، مشدات كولومبية، وحرير يليق بكِ.</p>
@@ -65,7 +65,7 @@ function Hero() {
           <Link className="button light" href={ROUTES.products}>اكتشفي المجموعة <ArrowLeft size={17} /></Link>
           <Link className={styles.heroSecondary} href="#categories">تصفّحي الأقسام</Link>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

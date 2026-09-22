@@ -53,6 +53,7 @@ services:
       Jwt__Secret: ${Jwt__Secret:?Jwt__Secret is required}
       Jwt__Issuer: ${Jwt__Issuer:-rival-api}
       Jwt__Audience: ${Jwt__Audience:-rival-admin}
+      Jwt__RefreshTokenDays: ${Jwt__RefreshTokenDays:-30}
       Security__DeviceHmacKey: ${Security__DeviceHmacKey:?Security__DeviceHmacKey is required}
       Security__AesKey: ${Security__AesKey:?Security__AesKey is required}
       Resend__ApiKey: ${Resend__ApiKey:-}

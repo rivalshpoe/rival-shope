@@ -3,9 +3,10 @@
 import { ArrowLeft, Check, LoaderCircle, LockKeyhole, Mail, RotateCcw, ShieldCheck } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from "react";
-import { requestAdminOtp, verifyAdminOtp } from "@/lib/api/endpoints/adminAuth";
+import { ensureAdminSession } from "@/lib/api/client";
+import { getAdminMe, requestAdminOtp, verifyAdminOtp } from "@/lib/api/endpoints/adminAuth";
 import { isMockApi } from "@/lib/mock/adapter";
-import { useAdminAuthStore } from "@/lib/store/adminAuthStore";
+import { ADMIN_SESSION_COOKIE, useAdminAuthStore } from "@/lib/store/adminAuthStore";
 import { buttonClass, inputClass } from "./AdminUI";
 import { ADMIN_BASE, friendlyError } from "./admin-utils";
 
@@ -25,10 +26,42 @@ export default function OtpLogin() {
   const [resendIn, setResendIn] = useState(0);
   const [expiresIn, setExpiresIn] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState("");
   const refs = useRef<Array<HTMLInputElement | null>>([]);
   const setSession = useAdminAuthStore((state) => state.setSession);
   const sessionExpired = useAdminAuthStore((state) => state.sessionExpired);
+
+  useEffect(() => {
+    let cancelled = false;
+    const hasSessionHint = document.cookie.split(";").some((part) => part.trim().startsWith(`${ADMIN_SESSION_COOKIE}=`));
+    if (isMockApi && !hasSessionHint) {
+      setCheckingSession(false);
+      return;
+    }
+    void (async () => {
+      const restored = await ensureAdminSession();
+      if (cancelled) return;
+      if (!restored) {
+        setCheckingSession(false);
+        return;
+      }
+      if (!useAdminAuthStore.getState().email) {
+        try {
+          const me = await getAdminMe();
+          useAdminAuthStore.setState({ email: me.email });
+        } catch {
+          // The access token is enough to enter; the address can stay blank until the next login.
+        }
+      }
+      const next = searchParams.get("next");
+      router.replace(next && next.startsWith(ADMIN_BASE) ? next : ADMIN_BASE);
+      router.refresh();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router, searchParams]);
 
   useEffect(() => {
     if (!resendIn && !expiresIn) return;
@@ -141,11 +174,18 @@ export default function OtpLogin() {
             <span className="rounded-2xl bg-[#eae0d2] p-3 text-[#805e3b]"><LockKeyhole className="h-5 w-5" /></span>
           </div>
 
-          {sessionExpired && step === "email" && (
+          {checkingSession ? (
+            <div className="py-16 text-center">
+              <LoaderCircle className="mx-auto h-7 w-7 animate-spin text-[#8c6338]" />
+              <p className="mt-4 text-sm font-bold">جاري فتح لوحة التحكم</p>
+            </div>
+          ) : null}
+
+          {!checkingSession && sessionExpired && step === "email" && (
             <p role="status" className="mb-5 rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">انتهت جلستك السابقة. سجّل الدخول مجددًا للمتابعة.</p>
           )}
 
-          {step === "email" ? (
+          {!checkingSession && step === "email" ? (
             <form onSubmit={requestOtp} noValidate>
               <p className="text-xs font-bold text-[#a17647]">تسجيل دخول المسؤول</p>
               <h2 className="mt-2 text-3xl font-black">مرحبًا بعودتك</h2>
@@ -172,7 +212,7 @@ export default function OtpLogin() {
                 {loading ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <><span>إرسال رمز التحقق</span><ArrowLeft className="h-4 w-4" /></>}
               </button>
             </form>
-          ) : (
+          ) : !checkingSession ? (
             <form onSubmit={verifyOtp} noValidate>
               <p className="text-xs font-bold text-[#a17647]">التحقق بخطوتين</p>
               <h2 className="mt-2 text-3xl font-black">أدخل الرمز</h2>
@@ -213,7 +253,7 @@ export default function OtpLogin() {
                 {loading ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <><span>دخول لوحة التحكم</span><Check className="h-4 w-4" /></>}
               </button>
             </form>
-          )}
+          ) : null}
           <p className="mt-8 text-center text-[10px] leading-5 text-[#9d9388]">هذه الصفحة مخصصة للمصرح لهم فقط. جميع محاولات الدخول مسجلة.</p>
         </section>
       </div>

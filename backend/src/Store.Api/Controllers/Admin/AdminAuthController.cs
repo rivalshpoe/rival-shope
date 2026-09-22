@@ -67,18 +67,27 @@ public sealed class AdminAuthController : ApiControllerBase
     private void SetRefreshCookie(string rawToken, DateTime expiresUtc) =>
         Response.Cookies.Append(RefreshCookieName, rawToken, CookieOptions(expiresUtc));
 
-    /// <summary>HttpOnly + Secure + SameSite=Strict, scoped to the auth path. Secure is relaxed only for plain-http requests in Development.</summary>
+    /// <summary>
+    /// HttpOnly persistent cookie. Secure follows the request so the cookie is actually stored
+    /// while the site is still served over HTTP; HTTPS turns Secure on automatically.
+    /// </summary>
     private CookieOptions CookieOptions(DateTime? expiresUtc)
     {
-        var env = HttpContext.RequestServices.GetRequiredService<IHostEnvironment>();
-        return new CookieOptions
+        var options = new CookieOptions
         {
             HttpOnly = true,
-            Secure = !(env.IsDevelopment() && !Request.IsHttps),
-            SameSite = SameSiteMode.Strict,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
             Path = CookiePath,
-            Expires = expiresUtc.HasValue ? new DateTimeOffset(expiresUtc.Value, TimeSpan.Zero) : null,
             IsEssential = true
         };
+        if (expiresUtc is DateTime expires)
+        {
+            var utc = expires.Kind == DateTimeKind.Utc ? expires : DateTime.SpecifyKind(expires, DateTimeKind.Utc);
+            options.Expires = new DateTimeOffset(utc);
+            var remaining = utc - DateTime.UtcNow;
+            if (remaining > TimeSpan.Zero) options.MaxAge = remaining;
+        }
+        return options;
     }
 }

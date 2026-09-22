@@ -30,9 +30,20 @@ public sealed partial class ResendEmailSender : IEmailSender
         if (string.IsNullOrWhiteSpace(_options.ApiKey))
             throw new InvalidOperationException("Resend:ApiKey is not configured.");
 
+        var text = Regex.Replace(htmlBody, "<[^>]+>", " ");
+        text = Regex.Replace(text, @"\s+", " ").Trim();
+
         using var request = new HttpRequestMessage(HttpMethod.Post, "emails");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
-        request.Content = JsonContent.Create(new { from = _options.From, to = new[] { to }, subject, html = htmlBody });
+        // Plain text plus a short HTML body. Gmail is more likely to keep a simple transactional message.
+        request.Content = JsonContent.Create(new
+        {
+            from = _options.From,
+            to = new[] { to },
+            subject,
+            text,
+            html = htmlBody
+        });
 
         using var response = await _http.SendAsync(request, ct);
         if (!response.IsSuccessStatusCode)

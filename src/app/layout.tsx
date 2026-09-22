@@ -7,6 +7,7 @@ const arabic = Noto_Kufi_Arabic({
   subsets: ["arabic"],
   variable: "--font-arabic",
   display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 const display = Cormorant_Garamond({

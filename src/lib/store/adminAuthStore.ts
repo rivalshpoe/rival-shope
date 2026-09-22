@@ -5,6 +5,9 @@ import { safeStorage } from "@/lib/utils/safeStorage";
 /** Cookie checked by `middleware.ts` + the dashboard layout to gate `/mgmt-portal-x7k9/dashboard/*`. */
 export const ADMIN_SESSION_COOKIE = "rival_admin_session";
 
+/** Matches the server refresh-token lifetime so closing the browser does not end the session. */
+export const ADMIN_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+
 interface AdminAuthState {
   email: string | null;
   accessToken: string | null;
@@ -19,12 +22,11 @@ function writeSessionCookie(maxAgeSeconds: number | null): void {
   if (typeof document === "undefined") return;
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
   if (maxAgeSeconds === null) {
-    document.cookie = `${ADMIN_SESSION_COOKIE}=; Max-Age=0; path=/; SameSite=Strict${secure}`;
+    document.cookie = `${ADMIN_SESSION_COOKIE}=; Max-Age=0; path=/; SameSite=Lax${secure}`;
     return;
   }
-  // The cookie is a routing hint only — the real credential is the Bearer token
-  // (memory) + the HttpOnly refresh cookie set by the API.
-  document.cookie = `${ADMIN_SESSION_COOKIE}=1; Max-Age=${Math.max(60, maxAgeSeconds)}; path=/; SameSite=Strict${secure}`;
+  // Routing hint only. The credential is the HttpOnly refresh cookie, which survives a closed browser.
+  document.cookie = `${ADMIN_SESSION_COOKIE}=1; Max-Age=${Math.max(60, maxAgeSeconds)}; path=/; SameSite=Lax${secure}`;
 }
 
 export const useAdminAuthStore = create<AdminAuthState>()(
@@ -35,7 +37,7 @@ export const useAdminAuthStore = create<AdminAuthState>()(
       expiresAt: null,
       sessionExpired: false,
       setSession: ({ email, accessToken, expiresIn }) => {
-        writeSessionCookie(expiresIn ?? 60 * 60 * 12);
+        writeSessionCookie(ADMIN_SESSION_MAX_AGE_SECONDS);
         set({
           email,
           accessToken: accessToken ?? null,
@@ -49,10 +51,9 @@ export const useAdminAuthStore = create<AdminAuthState>()(
       },
       getValidToken: () => {
         const { accessToken, expiresAt } = get();
-        if (expiresAt !== null && expiresAt <= Date.now()) {
-          get().clearSession(true);
-          return null;
-        }
+        if (!accessToken) return null;
+        // An expired access token is refreshed silently. Do not drop the persistent session cookie.
+        if (expiresAt !== null && expiresAt <= Date.now() + 15_000) return null;
         return accessToken;
       },
     }),

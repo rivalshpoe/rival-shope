@@ -25,7 +25,8 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { logoutAdmin } from "@/lib/api/endpoints/adminAuth";
+import { ensureAdminSession } from "@/lib/api/client";
+import { getAdminMe, logoutAdmin } from "@/lib/api/endpoints/adminAuth";
 import { useUnresolvedNotifications } from "@/lib/hooks/queries/admin/useAdminNotifications";
 import { useAdminAuthStore } from "@/lib/store/adminAuthStore";
 import { Spinner, ToastProvider } from "./AdminFeedback";
@@ -140,8 +141,35 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [ready, setReady] = useState(false);
   const clearSession = useAdminAuthStore((state) => state.clearSession);
   const email = useAdminAuthStore((state) => state.email);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const restored = await ensureAdminSession();
+      if (cancelled) return;
+      if (!restored) {
+        clearSession(true);
+        router.replace(ADMIN_LOGIN);
+        router.refresh();
+        return;
+      }
+      if (!useAdminAuthStore.getState().email) {
+        try {
+          const me = await getAdminMe();
+          useAdminAuthStore.setState({ email: me.email });
+        } catch {
+          // The dashboard can open without the address label.
+        }
+      }
+      if (!cancelled) setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [clearSession, router]);
 
   // Close the mobile drawer on navigation (state adjusted during render, no effect needed).
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -220,6 +248,17 @@ export default function AdminShell({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
+
+  if (!ready) {
+    return (
+      <div dir="rtl" className="grid min-h-screen place-items-center bg-[#f6f2eb] text-[#17130f]">
+        <div className="text-center">
+          <Spinner />
+          <p className="mt-4 text-sm font-bold">جاري فتح لوحة التحكم</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ToastProvider>

@@ -111,7 +111,7 @@ public sealed class RequestOtpCommandHandler : IRequestHandler<RequestOtpCommand
 
         try
         {
-            await _email.SendAsync(email, "رمز الدخول إلى لوحة تحكم Rival", BuildHtml(code), ct);
+            await _email.SendAsync(email, "رمز الدخول إلى Rival", BuildHtml(code), ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -125,11 +125,10 @@ public sealed class RequestOtpCommandHandler : IRequestHandler<RequestOtpCommand
 
     private static string BuildHtml(string code) =>
         $"""
-         <div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #eee;border-radius:12px">
-           <h2 style="margin:0 0 12px">رمز الدخول إلى لوحة تحكم Rival</h2>
-           <p>استخدم الرمز التالي لتسجيل الدخول. صلاحيته {AdminOtpCode.ExpiryMinutes} دقائق.</p>
-           <p style="font-size:32px;letter-spacing:8px;font-weight:bold;text-align:center;margin:24px 0">{code}</p>
-           <p style="color:#777;font-size:12px">إن لم تطلب هذا الرمز فتجاهل هذه الرسالة.</p>
+         <div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;color:#222">
+           <p>رمز الدخول إلى Rival هو <strong>{code}</strong></p>
+           <p>صالح لمدة {AdminOtpCode.ExpiryMinutes} دقائق.</p>
+           <p>إذا لم تطلبي هذا الرمز، تجاهلي الرسالة.</p>
          </div>
          """;
 
