@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Store.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Store.Domain\Store.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- MediatR 14.x / AutoMapper 16.x (Lucky Penny): license key read from config MediatR:LicenseKey / AutoMapper:LicenseKey (free Community tier) -->
+    <PackageReference Include="MediatR" Version="14.2.0" />
+    <PackageReference Include="AutoMapper" Version="16.2.0" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.12" />
+  </ItemGroup>
+
+</Project>

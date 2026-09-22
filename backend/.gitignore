@@ -1,0 +1,41 @@
+# Build output
+bin/
+obj/
+out/
+publish/
+*.binlog
+
+# IDE / user files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.swp
+.DS_Store
+Thumbs.db
+
+# Secrets & environment
+.env
+.env.*
+!.env.example
+secrets.json
+*.pfx
+*.p12
+*.key
+*.pem
+sixlabors.lic
+
+# Runtime artefacts
+logs/
+**/wwwroot/uploads/
+TestResults/
+coverage*/
+*.trx
+
+# Tooling
+.dotnet/
+.tools/
+node_modules/

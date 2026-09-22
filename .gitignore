@@ -1,0 +1,25 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next
+/.next/
+/out/
+
+# production
+/build
+
+# local configuration
+.env*
+!.env.local.example
+
+# logs and editors
+npm-debug.log*
+yarn-debug.log*
+*.log
+.dev-server.log
+*.tsbuildinfo
+.DS_Store
+.idea/
+.vscode/

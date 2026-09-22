@@ -1,0 +1,92 @@
+.hero {
+  position: relative;
+  width: min(100% - 32px, 1320px);
+  margin: 6px auto 0;
+  overflow: hidden;
+  border-radius: 28px;
+  color: white;
+  background: #15120f;
+}
+.heroImage { position: absolute; inset: 0; object-fit: cover; }
+.heroShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.62));
+}
+.heroContent {
+  position: relative;
+  z-index: 1;
+  padding-block: clamp(36px, 6vw, 72px) clamp(32px, 5vw, 60px);
+}
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.7rem;
+}
+.breadcrumbs a:hover { color: white; }
+.crumb { display: inline-flex; align-items: center; gap: 6px; }
+
+.catalog { padding-block: 28px 96px; }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 700;
+  transition: 0.2s;
+}
+.chip:hover { border-color: var(--ink); }
+.chipActive { color: white; background: var(--ink); border-color: var(--ink); }
+
+.tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 0 26px;
+}
+.count { color: var(--muted); font-size: 0.76rem; }
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+.sort select {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .hero { width: calc(100% - 20px); border-radius: 22px; margin-top: 4px; }
+  .catalog { padding-bottom: 64px; }
+}
+@media (max-width: 480px) {
+  .sort span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+}

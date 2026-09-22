@@ -1,0 +1,70 @@
+name: rival
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rival-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rival}
+      POSTGRES_USER: ${POSTGRES_USER:-rival}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required (see .env.example)}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rival} -d ${POSTGRES_DB:-rival}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: rival-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rival-api:local
+    container_name: rival-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      # Inside the compose network the API talks to the service names, not localhost.
+      ConnectionStrings__Postgres: ${ConnectionStrings__Postgres:-Host=postgres;Port=5432;Database=${POSTGRES_DB:-rival};Username=${POSTGRES_USER:-rival};Password=${POSTGRES_PASSWORD};Maximum Pool Size=100;Minimum Pool Size=5}
+      Redis__ConnectionString: ${Redis__ConnectionString:-redis:6379,abortConnect=false}
+      Database__AutoMigrate: ${Database__AutoMigrate:-true}
+    ports:
+      - "5000:8080"
+    volumes:
+      - uploads-data:/app/wwwroot/uploads
+      - logs-data:/app/logs
+
+volumes:
+  postgres-data:
+  redis-data:
+  uploads-data:
+  logs-data:

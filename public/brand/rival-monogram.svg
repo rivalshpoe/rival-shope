@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Rival">
+  <defs>
+    <linearGradient id="champagne" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3e7d7"/>
+      <stop offset=".45" stop-color="#b9956e"/>
+      <stop offset=".72" stop-color="#f4e9db"/>
+      <stop offset="1" stop-color="#8d6f4e"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="52" fill="#0b0a09"/>
+  <path d="M57 205V48h70c58 0 91 26 91 69 0 32-21 56-58 65l61 74h-50l-56-70v19H57Zm58-109v55h23c22 0 34-10 34-28s-12-27-34-27h-23Z" fill="url(#champagne)"/>
+  <path d="M75 72l115 133" fill="none" stroke="#0b0a09" stroke-width="8"/>
+</svg>

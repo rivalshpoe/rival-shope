@@ -1,0 +1,321 @@
+/* ---------------------------------------------------------------- offline */
+.offline {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 20px;
+  color: white;
+  background: #6d2822;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* ----------------------------------------------------------------- header */
+.header {
+  position: fixed;
+  z-index: var(--z-header);
+  top: var(--header-offset);
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+.bar {
+  position: relative;
+  width: min(calc(100% - 32px), 1320px);
+  height: var(--header-bar-h);
+  margin: auto;
+  padding: 0 14px;
+  border: 1px solid rgba(65, 54, 42, 0.12);
+  border-radius: 26px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  box-shadow: 0 12px 50px rgba(19, 14, 10, 0.08);
+  pointer-events: auto;
+}
+.start,
+.end {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.end { justify-content: flex-end; }
+
+/* Logo — the transparent PNG sits directly on the glass bar, no box or backdrop. */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(140px, 12vw, 176px);
+  height: 100%;
+  padding: 0 8px;
+}
+.logo img {
+  width: 100%;
+  height: auto;
+  max-height: calc(var(--header-bar-h) - 18px);
+  object-fit: contain;
+}
+
+/* --------------------------------------------------------------------- nav */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  /* Final guard: the centred logo owns the middle column and must never be overlapped. */
+  overflow: hidden;
+}
+.nav a,
+.navButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: none;
+  padding: 12px 11px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.nav a::after,
+.navButton::after {
+  content: "";
+  position: absolute;
+  height: 2px;
+  right: 11px;
+  left: 100%;
+  bottom: 6px;
+  border-radius: 2px;
+  background: var(--champagne);
+  transition: left 0.25s ease;
+}
+.nav a:hover::after,
+.nav a.active::after,
+.navButton:hover::after,
+.navButton.active::after { left: 11px; }
+.navSkeleton { width: 72px; height: 14px; margin-inline: 8px; }
+.chevron { transition: transform 0.25s ease; }
+.navButton.active .chevron { transform: rotate(180deg); }
+
+.relative { position: relative; }
+.count {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ivory);
+  border-radius: 99px;
+  color: white;
+  background: var(--ink);
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.mobileOnly { display: none; }
+
+/* --------------------------------------------------------------- mega menu */
+.mega {
+  position: absolute;
+  top: calc(var(--header-bar-h) + 10px);
+  left: 0;
+  right: 0;
+  z-index: var(--z-menu);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  visibility: hidden;
+}
+.megaOpen {
+  pointer-events: auto;
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+.megaInner {
+  width: min(calc(100% - 32px), 1320px);
+  margin: auto;
+  padding: clamp(22px, 3vw, 36px);
+  border: 1px solid rgba(65, 54, 42, 0.12);
+  border-radius: 26px;
+  background: var(--paper);
+  box-shadow: 0 30px 80px rgba(19, 14, 10, 0.18);
+}
+.megaHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.megaHead h2 {
+  margin-top: 6px;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.megaEmpty { color: var(--muted); font-size: 0.85rem; }
+.brandGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.brandCard,
+.brandSkeleton {
+  position: relative;
+  aspect-ratio: 1.45;
+  overflow: hidden;
+  border-radius: 18px;
+  isolation: isolate;
+}
+.brandCard { display: flex; align-items: flex-end; padding: 14px; color: white; }
+.brandCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(transparent 30%, rgba(0, 0, 0, 0.78));
+}
+.brandCard img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.brandCard:hover img { transform: scale(1.06); }
+.brandCard span {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  direction: ltr;
+  letter-spacing: 0.02em;
+}
+
+/* ------------------------------------------------------------------ drawer */
+.drawer { display: flex; flex-direction: column; gap: 22px; }
+.drawerLogo { display: block; width: 120px; }
+.drawerLogo img { width: 100%; height: auto; object-fit: contain; }
+.drawerNav { display: grid; border-top: 1px solid var(--line); }
+.drawerNav > a,
+.drawerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
+}
+.drawerNav > a { padding: 16px 4px; }
+.drawerRow > a { flex: 1; padding: 16px 4px; }
+.drawerRow > button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.rotated { transform: rotate(180deg); }
+.drawerChildren {
+  display: grid;
+  padding: 4px 0 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.drawerChildren a {
+  padding: 10px 16px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.drawerSkeleton { height: 18px; width: 100%; margin-block: 16px; }
+.drawerBrands { display: grid; gap: 12px; }
+.drawerBrands > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.drawerBrands a {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  direction: ltr;
+}
+.drawerFooter {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+.drawerFooter a {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------- bottom nav */
+.bottomNav { display: none; }
+
+/* ------------------------------------------------------------- responsive */
+/* Drop the least essential links first so they never run into the centred logo.
+   Every hidden section stays reachable from "المتجر"، الفوتر، وقائمة الجوال. */
+@media (max-width: 1560px) {
+  .nav a:nth-of-type(5) { display: none; }
+}
+@media (max-width: 1320px) {
+  .nav a:nth-of-type(4) { display: none; }
+}
+@media (max-width: 1150px) {
+  .nav a, .navButton { padding-inline: 8px; font-size: 0.74rem; }
+  .nav a:nth-of-type(3) { display: none; }
+}
+@media (max-width: 980px) {
+  .nav { display: none; }
+  .mobileOnly { display: inline-grid; }
+  .bar { grid-template-columns: 1fr auto 1fr; }
+}
+@media (max-width: 760px) {
+  .bar { width: calc(100% - 20px); padding: 0 8px; border-radius: 22px; }
+  .logo { width: 120px; padding: 0 4px; }
+  .desktopOnly { display: none; }
+  .bar :global(.icon-button) { width: 40px; height: 40px; }
+  .brandGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .bottomNav {
+    position: fixed;
+    z-index: var(--z-bottom-nav);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--bottom-nav-h) + var(--safe-bottom));
+    padding: 6px 6px calc(4px + var(--safe-bottom));
+    border-top: 1px solid var(--line);
+  }
+  .bottomNav a {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 3px;
+    color: var(--muted);
+    border-radius: 14px;
+  }
+  .bottomNav a.bottomActive { color: var(--ink); }
+  .bottomNav small { font-size: 0.6rem; font-weight: 700; }
+}

@@ -1,0 +1,87 @@
+# إنتاج Rival على Droplet واحد.
+# Postgres وRedis بلا منافذ عامة. الواجهة والـ API على 127.0.0.1 فقط، وCaddy هو الباب الوحيد 80/443.
+# الأسرار من /opt/rival/.env عبر: docker compose -f docker-compose.prod.yml --env-file /opt/rival/.env up -d --build
+
+name: rival
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rival
+      POSTGRES_USER: rival
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rival -d rival"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: ${ConnectionStrings__Postgres:?ConnectionStrings__Postgres is required}
+      Redis__ConnectionString: ${Redis__ConnectionString:-redis:6379,abortConnect=false}
+      Jwt__Secret: ${Jwt__Secret:?Jwt__Secret is required}
+      Jwt__Issuer: ${Jwt__Issuer:-rival-api}
+      Jwt__Audience: ${Jwt__Audience:-rival-admin}
+      Security__DeviceHmacKey: ${Security__DeviceHmacKey:?Security__DeviceHmacKey is required}
+      Security__AesKey: ${Security__AesKey:?Security__AesKey is required}
+      Resend__ApiKey: ${Resend__ApiKey:?Resend__ApiKey is required}
+      Resend__From: ${Resend__From:-Rival <onboarding@resend.dev>}
+      Email__Provider: Resend
+      Admin__Email: ${Admin__Email:-rivalshpoe@gmail.com}
+      Cors__AllowedOrigins__0: ${Cors__AllowedOrigins__0:?Cors origin is required}
+      Storage__Provider: ${Storage__Provider:-Local}
+      Database__AutoMigrate: "true"
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - uploads-data:/app/wwwroot/uploads
+      - logs-data:/app/logs
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:?NEXT_PUBLIC_API_BASE_URL is required}
+        NEXT_PUBLIC_USE_MOCK_API: "false"
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  postgres-data:
+  redis-data:
+  uploads-data:
+  logs-data:

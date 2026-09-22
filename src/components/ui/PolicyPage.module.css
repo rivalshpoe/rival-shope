@@ -1,0 +1,72 @@
+.hero {
+  width: min(100% - 32px, 1320px);
+  margin: 6px auto 0;
+  padding: clamp(40px, 6vw, 72px) 0 clamp(32px, 5vw, 56px);
+  border-radius: 28px;
+  color: white;
+  background: #12100e;
+}
+.hero :global(.section-head) { margin-bottom: 0; }
+.heroSkeleton { display: grid; justify-items: center; gap: 14px; }
+.heroSkeleton :global(.skeleton) { background: #2d2823; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: clamp(32px, 6vw, 96px);
+  padding-block: 56px 112px;
+}
+.aside {
+  position: sticky;
+  top: calc(var(--header-h) + 8px);
+  align-self: start;
+  display: grid;
+  gap: 12px;
+  padding-inline-end: 18px;
+  border-inline-end: 1px solid var(--line);
+}
+.aside nav { display: grid; gap: 10px; }
+.aside nav a { color: var(--muted); font-size: 0.76rem; transition: 0.2s; }
+.aside nav a:hover, .activeLink { color: var(--ink) !important; font-weight: 700; }
+.tocLabel { margin-top: 18px; }
+.toc a { font-size: 0.72rem !important; }
+
+.article { display: grid; gap: 0; }
+.articleSkeleton { display: grid; gap: 18px; }
+.intro { margin-bottom: 30px; color: var(--soft-ink); font-size: 0.95rem; line-height: 2.1; }
+.section {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 18px;
+  padding-bottom: 36px;
+  margin-bottom: 36px;
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+.section > span { color: var(--champagne); font: 500 1.3rem var(--font-display), Georgia, serif; direction: ltr; }
+.section h2 { margin: 0 0 12px; font-size: clamp(1.15rem, 2vw, 1.5rem); font-weight: 700; }
+.section p { margin: 0 0 12px; color: var(--muted); font-size: 0.86rem; line-height: 2.1; }
+.section p:last-child { margin-bottom: 0; }
+
+.help {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+.helpIcon { color: var(--champagne); }
+.help h3 { margin: 0 0 4px; font-size: 0.9rem; font-weight: 700; }
+.help p { margin: 0; color: var(--muted); font-size: 0.72rem; }
+
+@media (max-width: 760px) {
+  .hero { width: calc(100% - 20px); border-radius: 22px; margin-top: 4px; }
+  .layout { grid-template-columns: 1fr; padding-block: 36px 64px; gap: 28px; }
+  .aside { position: static; border: 0; padding: 0; }
+  .aside nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .toc { display: none !important; }
+  .tocLabel { display: none; }
+  .section { grid-template-columns: 34px 1fr; gap: 12px; }
+  .help { grid-template-columns: auto 1fr; }
+  .help .button, .help :global(.button) { grid-column: 1 / -1; }
+}
