@@ -94,8 +94,8 @@ public class PipelineTests : IClassFixture<RivalApiFactory>
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("VALIDATION_ERROR", body.GetProperty("errorCode").GetString());
         var fields = body.GetProperty("fieldErrors");
-        Assert.True(fields.TryGetProperty("input.customerName", out _));
-        Assert.True(fields.TryGetProperty("input.phoneNumber", out _));
+        Assert.True(fields.TryGetProperty("customerName", out _));
+        Assert.True(fields.TryGetProperty("phoneNumber", out _));
     }
 
     [Fact]

@@ -2,26 +2,23 @@
 
 هذا الدليل ينشر الواجهة (Next.js) والـ API (.NET 10) وPostgreSQL وRedis على Droplet واحد باستخدام Docker Compose. الأسرار لا تُرفع إلى Git أبدًا، والدخول إلى السيرفر يتم بمفتاح SSH فقط.
 
-## 0. الوضع الحالي على هذا الجهاز
+## 0. الحساب والمفتاح
 
-- مفتاح الدخول إلى السيرفر موجود ومحمي خارج المشروع: `%USERPROFILE%\.ssh\rival_do_ed25519` (الخاص) و`rival_do_ed25519.pub` (العام).
-- المفتاح العام مسجّل في حساب DigitalOcean باسم `rival-deploy` (ID `59513724`).
+مشروع سارة شال وحساب DigitalOcean القديم خارج هذا المستودع. لا تستخدم سياق `doctl` القديم ولا تنشئ أي شيء عليه.
+
+- مفتاح الدخول إلى سيرفر Rival موجود ومحمي خارج المشروع: `%USERPROFILE%\.ssh\rival_do_ed25519` (الخاص، لا يُرفع) و`rival_do_ed25519.pub` (العام فقط).
 - مفتاح GitHub منفصل: `%USERPROFILE%\.ssh\rival_github_ed25519`. لا يُستخدم لدخول السيرفر.
-- حساب `doctl` الحالي (`shallsara2006@gmail.com` / My Team) **لا يحتوي أي Droplet**. لا يُنشأ سيرفر مدفوع تلقائيًا من هذا المستودع.
-
-إذا كانت لوحة `cloud.digitalocean.com` التي فتحتها فريقًا آخر، ثبّت `doctl` عليه قبل المتابعة:
+- اربط أداة `doctl` بحساب DigitalOcean الجديد الخاص بـ Rival في سياق مستقل:
 
 ```powershell
 doctl auth init --context rival
 doctl auth switch --context rival
-doctl compute ssh-key list
-```
-
-إن لم يظهر `rival-deploy`، ارفع المفتاح **العام فقط**:
-
-```powershell
+doctl account get
 doctl compute ssh-key import rival-deploy --public-key-file "$env:USERPROFILE\.ssh\rival_do_ed25519.pub"
+doctl compute ssh-key list --format ID,Name,FingerPrint
 ```
+
+انسخ قيمة `ID` الخاصة بـ `rival-deploy` من الحساب الجديد. ستستخدمها في الخطوة التالية بدل `<RIVAL_SSH_KEY_ID>`.
 
 ## 1. إنشاء السيرفر (مرة واحدة)
 
@@ -32,7 +29,7 @@ doctl compute droplet create rival-shop `
   --region fra1 `
   --size s-2vcpu-4gb `
   --image ubuntu-24-04-x64 `
-  --ssh-keys 59513724 `
+  --ssh-keys <RIVAL_SSH_KEY_ID> `
   --enable-monitoring `
   --wait
 doctl compute droplet list --format ID,Name,PublicIPv4,Status
