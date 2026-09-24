@@ -23,8 +23,9 @@ public sealed class ProductInputValidator : AbstractValidator<ProductInput>
         RuleFor(x => x.Description).MaximumLength(5000).WithMessage("الوصف طويل جدًا.");
         RuleFor(x => x.CategoryId).NotEmpty().WithMessage("القسم مطلوب.");
         RuleFor(x => x.Price).GreaterThan(0).WithMessage("السعر يجب أن يكون أكبر من صفر.");
-        RuleFor(x => x.DiscountPrice).GreaterThan(0).When(x => x.DiscountPrice.HasValue).WithMessage("سعر الخصم يجب أن يكون أكبر من صفر.")
-            .LessThan(x => x.Price).When(x => x.DiscountPrice.HasValue).WithMessage("سعر الخصم يجب أن يكون أقل من السعر الأساسي.");
+        // Zero and null both mean “no discount”. Only a negative amount is rejected.
+        RuleFor(x => x.DiscountPrice).GreaterThanOrEqualTo(0).When(x => x.DiscountPrice.HasValue).WithMessage("سعر الخصم يجب أن يكون أكبر من صفر.")
+            .LessThan(x => x.Price).When(x => x.DiscountPrice is > 0).WithMessage("سعر الخصم يجب أن يكون أقل من السعر الأساسي.");
         RuleFor(x => x.DiscountEndAt).GreaterThan(x => x.DiscountStartAt!.Value)
             .When(x => x.DiscountStartAt.HasValue && x.DiscountEndAt.HasValue)
             .WithMessage("تاريخ انتهاء الخصم يجب أن يكون بعد تاريخ البداية.");
@@ -82,9 +83,10 @@ internal static class ProductWriteHelpers
         p.CategoryId = input.CategoryId;
         p.BrandId = input.BrandId;
         p.Price = input.Price;
-        p.DiscountPrice = input.DiscountPrice;
-        p.DiscountStartAt = input.DiscountStartAt;
-        p.DiscountEndAt = input.DiscountEndAt;
+        var discount = input.DiscountPrice is > 0 ? input.DiscountPrice : null;
+        p.DiscountPrice = discount;
+        p.DiscountStartAt = discount is null ? null : input.DiscountStartAt;
+        p.DiscountEndAt = discount is null ? null : input.DiscountEndAt;
         p.HasSizes = input.HasSizes;
         p.HasColors = input.Colors is { Count: > 0 };
         p.Stock = input.HasSizes ? 0 : input.Stock;

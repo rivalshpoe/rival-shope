@@ -58,7 +58,7 @@ const schema = z
     if (values.discountPrice !== null && values.discountPrice < 0) {
       context.addIssue({ code: "custom", path: ["discountPrice"], message: "أدخل قيمة صحيحة" });
     }
-    if (values.discountStartAt && values.discountEndAt && values.discountStartAt > values.discountEndAt) {
+    if (values.discountPrice !== null && values.discountStartAt && values.discountEndAt && values.discountStartAt > values.discountEndAt) {
       context.addIssue({ code: "custom", path: ["discountEndAt"], message: "نهاية الخصم يجب أن تكون بعد بدايته" });
     }
     if (values.hasSizes) {
@@ -106,8 +106,21 @@ function toDefaults(product: AdminProductDetails | undefined, categories: AdminC
   };
 }
 
-const numberValue = (value: string) => (value === "" ? null : Number(value));
-const requiredNumber = (value: string) => (value === "" ? Number.NaN : Number(value));
+const numberValue = (value: unknown): number | null => {
+  if (value === "" || value === null || value === undefined) return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+const requiredNumber = (value: unknown) => {
+  const parsed = numberValue(value);
+  return parsed === null ? Number.NaN : parsed;
+};
+/** An empty field or zero means the product is sold without a discount. */
+const optionalDiscount = (value: unknown): number | null => {
+  const parsed = numberValue(value);
+  if (parsed === null || parsed === 0) return null;
+  return parsed;
+};
 
 // ---------------------------------------------------------------------------
 function ProductFormInner({ product, categories }: { product?: AdminProductDetails; categories: AdminCategory[] }) {
@@ -159,7 +172,7 @@ function ProductFormInner({ product, categories }: { product?: AdminProductDetai
       categoryId: values.subCategoryId || values.mainCategoryId,
       brandId: values.brandId || null,
       price: values.price,
-      discountPrice: values.discountPrice,
+      discountPrice: values.discountPrice !== null && values.discountPrice > 0 ? values.discountPrice : null,
       discountStartAt: values.discountPrice !== null ? fromDatetimeLocal(values.discountStartAt) : null,
       discountEndAt: values.discountPrice !== null ? fromDatetimeLocal(values.discountEndAt) : null,
       hasSizes: values.hasSizes,
@@ -226,8 +239,8 @@ function ProductFormInner({ product, categories }: { product?: AdminProductDetai
             <Field label="السعر (₪)" required error={errors.price?.message}>
               <input {...register("price", { setValueAs: requiredNumber })} type="number" min={0} step="0.5" inputMode="decimal" className={inputClass} placeholder="0" />
             </Field>
-            <Field label="سعر الخصم (₪)" hint="اختياري — يجب أن يكون أقل من السعر" error={errors.discountPrice?.message}>
-              <input {...register("discountPrice", { setValueAs: numberValue })} type="number" min={0} step="0.5" inputMode="decimal" className={inputClass} placeholder="بدون خصم" />
+            <Field label="سعر الخصم (₪)" hint="اختياري — اتركيه فارغًا إذا لم يكن هناك خصم" error={errors.discountPrice?.message}>
+              <input {...register("discountPrice", { setValueAs: optionalDiscount })} type="number" min={0} step="0.5" inputMode="decimal" className={inputClass} placeholder="بدون خصم" />
             </Field>
             <Field label="بداية الخصم" error={errors.discountStartAt?.message}>
               <input {...register("discountStartAt")} type="datetime-local" dir="ltr" className={cx(inputClass, "text-left")} />
