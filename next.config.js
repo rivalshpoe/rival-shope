@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
+const uploadsOrigin = process.env.UPLOADS_ORIGIN || "http://127.0.0.1:5000";
+
 const nextConfig = {
   output: "standalone",
+  async rewrites() {
+    // Admin uploads are stored on the API. When the request reaches Next (local dev, or a
+    // proxy that does not route /uploads itself), forward it to the API.
+    return [{ source: "/uploads/:path*", destination: `${uploadsOrigin}/uploads/:path*` }];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },

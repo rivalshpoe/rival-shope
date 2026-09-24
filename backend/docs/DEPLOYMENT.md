@@ -157,16 +157,22 @@ curl -fsS http://127.0.0.1:8080/api/v1/health
 sudo apt-get install -y caddy
 sudo tee /etc/caddy/Caddyfile >/dev/null <<'EOF'
 your-domain.com {
-  reverse_proxy 127.0.0.1:3000
-}
-api.your-domain.com {
-  reverse_proxy 127.0.0.1:8080
+  encode gzip
+  handle /api/* {
+    reverse_proxy 127.0.0.1:8080
+  }
+  handle /uploads/* {
+    reverse_proxy 127.0.0.1:8080
+  }
+  handle {
+    reverse_proxy 127.0.0.1:3000
+  }
 }
 EOF
 sudo systemctl reload caddy
 ```
 
-وجّه سجلَّي DNS من نوع A إلى IPv4 السيرفر. بعد صدور الشهادة حدّث `Cors__AllowedOrigins__0` و`NEXT_PUBLIC_API_BASE_URL=https://api.your-domain.com/api/v1` ثم أعد بناء الواجهة.
+وجّه سجل DNS من نوع A إلى IPv4 السيرفر. بعد صدور الشهادة حدّث `Cors__AllowedOrigins__0` و`NEXT_PUBLIC_API_BASE_URL=https://your-domain.com/api/v1` ثم أعد بناء الواجهة. مسار `/uploads` يجب أن يصل إلى الـ API وإلا تظهر صورة بديلة بدل الصور المرفوعة.
 
 ## 7. النسخ الاحتياطي
 

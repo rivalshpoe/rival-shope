@@ -121,7 +121,7 @@ function ProductView({ product }: { product: ProductDetailsData }) {
               {hasDiscount && <del>{formatPrice(product.price)}</del>}
               {hasDiscount && <span className="badge">وفّري {formatPrice(product.price - unitPrice)}</span>}
             </div>
-            <p className={styles.lead}>{product.description.split("\n")[0]}</p>
+            {product.description.trim() && <p className={styles.lead}>{product.description.trim()}</p>}
 
             {product.colors.length > 0 && (
               <div className={styles.option}>

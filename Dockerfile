@@ -9,8 +9,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # قيم عامة تُخبز وقت البناء. لا تضع أسرارًا هنا؛ NEXT_PUBLIC ظاهرة في المتصفح.
 ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
 ARG NEXT_PUBLIC_USE_MOCK_API=true
+ARG UPLOADS_ORIGIN=http://127.0.0.1:5000
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_USE_MOCK_API=$NEXT_PUBLIC_USE_MOCK_API
+ENV UPLOADS_ORIGIN=$UPLOADS_ORIGIN
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

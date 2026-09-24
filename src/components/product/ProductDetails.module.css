@@ -107,7 +107,7 @@
 .price { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 .price strong { font-size: 1.45rem; font-weight: 700; }
 .price del { color: #9c9389; font-size: 0.95rem; }
-.lead { color: var(--muted); line-height: 1.95; font-size: 0.9rem; }
+.lead { color: var(--ink); font-weight: 600; line-height: 1.9; font-size: 1rem; white-space: pre-line; }
 
 .option { display: grid; gap: 10px; }
 .option > strong { font-size: 0.8rem; }

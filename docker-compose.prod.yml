@@ -76,6 +76,7 @@ services:
       args:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:?NEXT_PUBLIC_API_BASE_URL is required}
         NEXT_PUBLIC_USE_MOCK_API: "false"
+        UPLOADS_ORIGIN: http://api:8080
     restart: unless-stopped
     depends_on:
       - api

@@ -5,6 +5,16 @@ import { useState } from "react";
 
 const PLACEHOLDER = "/brand/image-placeholder.svg";
 
+/** Files saved by the API live at `/uploads`, outside the Next.js public folder. */
+function isStoredUpload(src: string): boolean {
+  try {
+    const path = src.startsWith("/") ? src : new URL(src, "http://rival.local").pathname;
+    return path === "/uploads" || path.startsWith("/uploads/");
+  } catch {
+    return src.includes("/uploads/");
+  }
+}
+
 type SmartImageProps = Omit<ImageProps, "src" | "width" | "height" | "priority" | "preload" | "loading" | "fetchPriority" | "fill"> & {
   src: string;
   width?: number;
@@ -41,6 +51,24 @@ export function SmartImage({
   const loadingProps = priority
     ? { loading: "eager" as const, fetchPriority: "high" as const }
     : { loading: "lazy" as const };
+
+  // next/image treats a root-relative src as a file in `public/`. Uploaded images are served
+  // by the API, so a plain img is required or the missing file is swapped for the placeholder.
+  if (isStoredUpload(source)) {
+    return (
+      <img
+        src={source}
+        alt={alt}
+        width={fill ? undefined : width}
+        height={fill ? undefined : height}
+        className={props.className}
+        style={fill ? { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" } : undefined}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        onError={() => setFailedSrc(src)}
+      />
+    );
+  }
 
   return (
     <Image
