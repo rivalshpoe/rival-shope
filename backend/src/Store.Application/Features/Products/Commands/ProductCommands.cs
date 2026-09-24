@@ -94,8 +94,25 @@ internal static class ProductWriteHelpers
         p.UpdatedAt = now;
     }
 
+    /// <summary>
+    /// A child with a client Guid added through a tracked parent's collection is marked Modified (xmin 0) and the save conflicts.
+    /// DbSet.Add forces Added. An untracked parent keeps the child on the graph so the later Products.Add inserts the whole tree.
+    /// </summary>
+    private static void TrackNewChild<T>(IApplicationDbContext db, Product parent, T child, ICollection<T> collection, Action<T> addTracked) where T : class
+    {
+        if (db.Products.Local.Contains(parent))
+        {
+            if (!collection.Contains(child)) collection.Add(child);
+            addTracked(child);
+        }
+        else
+        {
+            collection.Add(child);
+        }
+    }
+
     /// <summary>Replaces the image set. The first URL becomes the primary image (same transaction).</summary>
-    public static void SyncImages(Product p, IReadOnlyList<string>? urls, DateTime now)
+    public static void SyncImages(IApplicationDbContext db, Product p, IReadOnlyList<string>? urls, DateTime now)
     {
         var wanted = (urls ?? Array.Empty<string>()).Where(u => !string.IsNullOrWhiteSpace(u)).Select(u => u.Trim()).Distinct().ToList();
         var existing = p.Images.ToList();
@@ -110,7 +127,7 @@ internal static class ProductWriteHelpers
             if (img is null)
             {
                 img = new ProductImage { ProductId = p.Id, Url = url, ThumbnailUrl = ProductProjections.DeriveThumbnailUrl(url), CreatedAt = now };
-                p.Images.Add(img);
+                TrackNewChild(db, p, img, p.Images, e => db.ProductImages.Add(e));
             }
             img.SortOrder = i;
             img.IsPrimary = i == 0;
@@ -119,7 +136,7 @@ internal static class ProductWriteHelpers
     }
 
     /// <summary>Upserts sizes by Id; removes sizes not present. Stock changes here are administrative (no inventory log).</summary>
-    public static void SyncSizes(Product p, IReadOnlyList<ProductSizeInput>? sizes, DateTime now)
+    public static void SyncSizes(IApplicationDbContext db, Product p, IReadOnlyList<ProductSizeInput>? sizes, DateTime now)
     {
         var wanted = p.HasSizes ? (sizes ?? Array.Empty<ProductSizeInput>()) : Array.Empty<ProductSizeInput>();
         var keepIds = wanted.Where(s => s.Id.HasValue).Select(s => s.Id!.Value).ToHashSet();
@@ -136,7 +153,7 @@ internal static class ProductWriteHelpers
             if (size is null)
             {
                 size = new ProductSize { ProductId = p.Id, CreatedAt = now };
-                p.Sizes.Add(size);
+                TrackNewChild(db, p, size, p.Sizes, e => db.ProductSizes.Add(e));
             }
             size.Label = input.Label.Trim();
             size.Price = input.Price;
@@ -146,7 +163,7 @@ internal static class ProductWriteHelpers
         }
     }
 
-    public static void SyncColors(Product p, IReadOnlyList<ProductColorInput>? colors, DateTime now)
+    public static void SyncColors(IApplicationDbContext db, Product p, IReadOnlyList<ProductColorInput>? colors, DateTime now)
     {
         var wanted = colors ?? Array.Empty<ProductColorInput>();
         var keepIds = wanted.Where(c => c.Id.HasValue).Select(c => c.Id!.Value).ToHashSet();
@@ -163,7 +180,7 @@ internal static class ProductWriteHelpers
             if (color is null)
             {
                 color = new ProductColor { ProductId = p.Id, CreatedAt = now };
-                p.Colors.Add(color);
+                TrackNewChild(db, p, color, p.Colors, e => db.ProductColors.Add(e));
             }
             color.Name = input.Name.Trim();
             color.HexCode = input.Hex.Trim().ToUpperInvariant();
@@ -188,9 +205,9 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
         ProductWriteHelpers.ApplyScalars(product, input, now);
         product.UpdatedAt = null;
         product.Slug = await ProductWriteHelpers.UniqueSlugAsync(_db, input.Slug, input.Title, null, ct);
-        ProductWriteHelpers.SyncImages(product, input.ImageUrls, now);
-        ProductWriteHelpers.SyncSizes(product, input.Sizes, now);
-        ProductWriteHelpers.SyncColors(product, input.Colors, now);
+        ProductWriteHelpers.SyncImages(_db, product, input.ImageUrls, now);
+        ProductWriteHelpers.SyncSizes(_db, product, input.Sizes, now);
+        ProductWriteHelpers.SyncColors(_db, product, input.Colors, now);
 
         _db.Products.Add(product);
 
@@ -239,9 +256,9 @@ public sealed class UpdateProductCommandHandler : IRequestHandler<UpdateProductC
         ProductWriteHelpers.ApplyScalars(product, input, now);
         if (!string.IsNullOrWhiteSpace(input.Slug) && input.Slug != product.Slug)
             product.Slug = await ProductWriteHelpers.UniqueSlugAsync(_db, input.Slug, input.Title, product.Id, ct);
-        ProductWriteHelpers.SyncImages(product, input.ImageUrls, now);
-        ProductWriteHelpers.SyncSizes(product, input.Sizes, now);
-        ProductWriteHelpers.SyncColors(product, input.Colors, now);
+        ProductWriteHelpers.SyncImages(_db, product, input.ImageUrls, now);
+        ProductWriteHelpers.SyncSizes(_db, product, input.Sizes, now);
+        ProductWriteHelpers.SyncColors(_db, product, input.Colors, now);
 
         _audit.Log("ProductUpdated", nameof(Product), product.Id, product.Title);
         await _db.SaveChangesAsync(ct);
