@@ -12,6 +12,7 @@ import { getEffectivePrice, toListItem } from "@/lib/api/endpoints/products";
 import { MAX_LINE_QUANTITY } from "@/lib/constants/categories";
 import { ROUTES } from "@/lib/constants/routes";
 import { useProduct } from "@/lib/hooks/queries";
+import { swatchInk } from "@/lib/utils/color";
 import { formatPrice } from "@/lib/utils/formatCurrency";
 import type { ProductDetails, ProductListItem } from "@/types/api.types";
 import styles from "./ProductCard.module.css";
@@ -199,7 +200,7 @@ function QuickViewBody({ product }: { product: ProductDetails }) {
             <strong>اللون{selectedColor ? <span> · {selectedColor.name}</span> : null}</strong>
             <div className={styles.swatches}>
               {product.colors.map((color) => (
-                <button type="button" key={color.id} className={colorId === color.id ? styles.chosen : ""} style={{ background: color.hex }} onClick={() => setColorId(color.id)} aria-label={color.name} aria-pressed={colorId === color.id}>
+                <button type="button" key={color.id} className={colorId === color.id ? styles.chosen : ""} style={{ background: color.hex, color: swatchInk(color.hex) }} onClick={() => setColorId(color.id)} aria-label={color.name} aria-pressed={colorId === color.id}>
                   {colorId === color.id && <Check size={13} />}
                 </button>
               ))}

@@ -16,6 +16,7 @@ import { isNotFoundError } from "@/lib/api/errors";
 import { MAX_LINE_QUANTITY } from "@/lib/constants/categories";
 import { POLICY_ROUTES, ROUTES } from "@/lib/constants/routes";
 import { usePolicies, useProduct, useProductsByIds, useReviews } from "@/lib/hooks/queries";
+import { swatchInk } from "@/lib/utils/color";
 import { formatPrice } from "@/lib/utils/formatCurrency";
 import type { PolicyKey, ProductDetails as ProductDetailsData, ProductImage } from "@/types/api.types";
 import { ProductGrid } from "./ProductCard";
@@ -128,7 +129,7 @@ function ProductView({ product }: { product: ProductDetailsData }) {
                 <strong>اللون{selectedColor ? <span> · {selectedColor.name}</span> : null}</strong>
                 <div className={styles.swatches}>
                   {product.colors.map((color) => (
-                    <button type="button" key={color.id} className={colorId === color.id ? styles.chosen : ""} style={{ background: color.hex }} onClick={() => setColorId(color.id)} aria-label={color.name} aria-pressed={colorId === color.id}>
+                    <button type="button" key={color.id} className={colorId === color.id ? styles.chosen : ""} style={{ background: color.hex, color: swatchInk(color.hex) }} onClick={() => setColorId(color.id)} aria-label={color.name} aria-pressed={colorId === color.id}>
                       {colorId === color.id && <Check size={14} />}
                     </button>
                   ))}

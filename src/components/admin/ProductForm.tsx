@@ -73,6 +73,17 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 const SIZE_PRESETS = ["S", "M", "L", "XL", "XXL", "3XL"];
+function colorPickerValue(value: string): string {
+  return /^#[0-9a-fA-F]{6}$/.test(value) ? value.toLowerCase() : "#c0c0c0";
+}
+
+function normalizeHex(value: string): string {
+  const trimmed = value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toUpperCase();
+  if (/^[0-9a-fA-F]{6}$/.test(trimmed)) return `#${trimmed.toUpperCase()}`;
+  return trimmed;
+}
+
 const COLOR_GROUPS: Array<{ label: string; colors: Array<{ name: string; hex: string }> }> = [
   { label: "أساسية", colors: [{ name: "أسود", hex: "#111111" }, { name: "أبيض", hex: "#F5F5F5" }, { name: "بيج", hex: "#D8C3A5" }, { name: "بني", hex: "#6B4A2B" }] },
   { label: "بشرة", colors: [{ name: "نيود", hex: "#E8C4A8" }, { name: "كراميل", hex: "#C68E5B" }, { name: "موكا", hex: "#8B5A3C" }] },
@@ -345,13 +356,39 @@ function ProductFormInner({ product, categories }: { product?: AdminProductDetai
             <ul className="mt-5 space-y-2">
               {colors.fields.map((field, index) => (
                 <li key={field.id} className="flex flex-wrap items-center gap-3 rounded-2xl bg-[#faf7f1] p-3">
-                  <input {...register(`colors.${index}.hex` as const)} type="color" className="h-10 w-12 cursor-pointer rounded-lg border border-black/10 bg-white p-1" aria-label={`اختيار لون ${index + 1}`} />
+                  <Controller
+                    control={control}
+                    name={`colors.${index}.hex`}
+                    render={({ field: hexField }) => (
+                      <>
+                        <input
+                          type="color"
+                          value={colorPickerValue(hexField.value)}
+                          onChange={(event) => hexField.onChange(event.target.value.toUpperCase())}
+                          onBlur={hexField.onBlur}
+                          className="h-10 w-12 cursor-pointer rounded-lg border border-black/10 bg-white p-1"
+                          aria-label={`اختيار لون ${index + 1}`}
+                        />
+                        <span className="h-10 w-10 shrink-0 rounded-full border border-black/10" style={{ background: colorPickerValue(hexField.value) }} aria-hidden />
+                        <input
+                          value={hexField.value}
+                          onChange={(event) => hexField.onChange(event.target.value)}
+                          onBlur={() => {
+                            hexField.onChange(normalizeHex(hexField.value));
+                            hexField.onBlur();
+                          }}
+                          dir="ltr"
+                          className={cx(inputClass, "w-28 py-2 text-left font-mono text-xs uppercase")}
+                          aria-label={`رمز اللون ${index + 1}`}
+                        />
+                      </>
+                    )}
+                  />
                   <div className="min-w-0 flex-1">
                     <input {...register(`colors.${index}.name` as const)} className={cx(inputClass, "py-2")} placeholder="اسم اللون" aria-label={`اسم اللون ${index + 1}`} />
                     {errors.colors?.[index]?.name && <span role="alert" className="mt-1 block text-[11px] font-bold text-red-600">{errors.colors[index]?.name?.message}</span>}
                     {errors.colors?.[index]?.hex && <span role="alert" className="mt-1 block text-[11px] font-bold text-red-600">{errors.colors[index]?.hex?.message}</span>}
                   </div>
-                  <input {...register(`colors.${index}.hex` as const)} dir="ltr" className={cx(inputClass, "w-28 py-2 text-left font-mono text-xs uppercase")} aria-label={`رمز اللون ${index + 1}`} />
                   <button type="button" onClick={() => colors.remove(index)} aria-label={`إزالة اللون ${index + 1}`} className={cx(ghostIconClass, "text-red-500 hover:bg-red-50")}><Trash2 className="h-4 w-4" /></button>
                 </li>
               ))}
