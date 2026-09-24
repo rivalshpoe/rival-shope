@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronLeft, Heart, Home, LayoutGrid, Menu, Scale, Search, ShoppingBag, WifiOff, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronLeft, Heart, Home, LayoutGrid, Menu, Search, ShoppingBag, WifiOff, X } from "lucide-react";
 import { useBrands, useCategoryTree } from "@/lib/hooks/queries";
 import { useOnlineStatus } from "@/lib/hooks/useOnlineStatus";
 import { ROUTES } from "@/lib/constants/routes";
@@ -252,7 +252,7 @@ function MobileDrawer() {
 
         <div className={styles.drawerFooter}>
           <Link href={ROUTES.wishlist} onClick={() => setMenuOpen(false)}><Heart size={16} /> المفضلة</Link>
-          <Link href={ROUTES.compare} onClick={() => setMenuOpen(false)}><Scale size={16} /> المقارنة</Link>
+          <Link href={ROUTES.compare} onClick={() => setMenuOpen(false)}><ArrowUpRight size={16} /> المقارنة</Link>
         </div>
       </aside>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Scale, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowUpRight, Heart, ShoppingBag, Trash2 } from "lucide-react";
 import { useShop } from "@/components/layout/ShopProvider";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { SectionHead } from "@/components/ui/SectionHead";
@@ -66,7 +66,7 @@ export function ComparePage() {
         <SkeletonProductGrid count={Math.max(2, shop.compare.length)} />
       ) : shop.compare.length === 0 ? (
         <div className="empty-state">
-          <Scale size={38} strokeWidth={1.2} />
+          <ArrowUpRight size={38} strokeWidth={1.2} />
           <h2>لا توجد قطع للمقارنة</h2>
           <p>أضيفي قطعتين أو أكثر من أيقونة المقارنة على بطاقات المنتجات.</p>
           <Link className="button" href={ROUTES.products}>تصفّحي المجموعة</Link>

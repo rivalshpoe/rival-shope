@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Eye, Heart, Minus, Plus, Scale, ShoppingBag, X } from "lucide-react";
+import { ArrowUpRight, Check, Eye, Heart, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useShop } from "@/components/layout/ShopProvider";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -61,7 +61,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             <Heart size={17} fill={liked ? "currentColor" : "none"} />
           </button>
           <button type="button" className={compared ? styles.selected : ""} onClick={() => shop.toggleCompare(product.id)} aria-label={compared ? "إزالة من المقارنة" : "إضافة للمقارنة"} aria-pressed={compared}>
-            <Scale size={17} />
+            <ArrowUpRight size={17} />
           </button>
         </div>
       </div>

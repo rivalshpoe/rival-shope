@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Heart, Minus, Plus, Scale, ShoppingBag, Star, X, ZoomIn } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingBag, Star, X, ZoomIn } from "lucide-react";
 import { ReviewCard } from "@/components/home/HomeExperience";
 import { useShop } from "@/components/layout/ShopProvider";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -180,7 +180,7 @@ function ProductView({ product }: { product: ProductDetailsData }) {
                 <Heart size={16} fill={liked ? "currentColor" : "none"} /> {liked ? "في المفضلة" : "أضيفي للمفضلة"}
               </button>
               <button type="button" onClick={() => shop.toggleCompare(product.id)} aria-pressed={compared}>
-                <Scale size={16} /> {compared ? "في المقارنة" : "قارني"}
+                <ArrowUpRight size={16} /> {compared ? "في المقارنة" : "قارني"}
               </button>
             </div>
 
